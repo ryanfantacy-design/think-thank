@@ -1,0 +1,186 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap");
+
+:root {
+    --cream: #fff7e3;
+    --cream-2: #ffeec2;
+    --paper: #ffffff;
+    --ink: #1a1a2e;
+    --ink-soft: #4b4b63;
+    --muted: #8e8ea3;
+    --line: #1a1a2e;
+    --yellow: #ffd600;
+    --mint: #00c896;
+    --coral: #ff6b6b;
+    --sky: #5bc0eb;
+    --lavender: #b388ff;
+    --peach: #ffb38a;
+    --shadow: 4px 4px 0 var(--ink);
+    --shadow-sm: 3px 3px 0 var(--ink);
+    --shadow-lg: 6px 6px 0 var(--ink);
+}
+
+html,
+body {
+    background: var(--cream);
+    color: var(--ink);
+}
+
+body {
+    background-image:
+        radial-gradient(rgba(26, 26, 46, 0.08) 1.2px, transparent 1.2px),
+        radial-gradient(
+            ellipse at top right,
+            rgba(255, 107, 107, 0.18),
+            transparent 55%
+        ),
+        radial-gradient(
+            ellipse at bottom left,
+            rgba(91, 192, 235, 0.18),
+            transparent 55%
+        );
+    background-size:
+        22px 22px,
+        100% 100%,
+        100% 100%;
+    background-position:
+        0 0,
+        0 0,
+        0 0;
+    background-attachment: fixed;
+}
+
+.App {
+    min-height: 100vh;
+    color: var(--ink);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--ink);
+    border-radius: 999px;
+    border: 2px solid var(--cream);
+}
+
+::selection {
+    background: var(--yellow);
+    color: var(--ink);
+}
+
+/* Neo-brutal helpers */
+.nb-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+}
+.nb-card-soft {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+}
+.nb-btn {
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    font-weight: 700;
+}
+.nb-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--ink);
+}
+.nb-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+.nb-input {
+    background: #fffdf3;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    color: var(--ink);
+    padding: 10px 12px;
+    outline: none;
+}
+.nb-input:focus {
+    box-shadow: var(--shadow-sm);
+    background: #ffffff;
+}
+
+/* Sticker tag (rotated chip) */
+.sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: 0;
+    line-height: 1.45;
+}
+
+.planner-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.planner-grid-week,
+.planner-grid-month {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.planner-day {
+    min-height: 130px;
+    background: #fffdf3;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    padding: 10px;
+}
+
+.planner-day-title {
+    color: var(--ink-soft);
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.planner-task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #ffffff;
+    border: 2px solid var(--ink);
+    border-left: 8px solid var(--yellow);
+    border-radius: 12px;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+}
+
+.planner-task-done {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+@media (max-width: 900px) {
+    .planner-grid-week,
+    .planner-grid-month {
+        grid-template-columns: 1fr;
+    }
+}

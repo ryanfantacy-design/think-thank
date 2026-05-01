@@ -1,0 +1,104 @@
+{
+  "theme": "Dark Playful",
+  "archetype": "Archetype 6 (Vibrant Play) applied to a Dark Mode Base",
+  "description": "A focus-friendly dark mode study dashboard with highly saturated neon/pastel accents. Time/duration values are strictly solid black text on bright vibrant background chips to ensure legibility and create a playful aesthetic contrast.",
+  "colors": {
+    "background": {
+      "main": "#0A0A0F",
+      "surface": "#13131A",
+      "surface_elevated": "#1C1C26"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A0A0AB",
+      "muted": "#71717A",
+      "black_override": "#000000"
+    },
+    "accents": {
+      "yellow": "#FFD600",
+      "mint": "#00E676",
+      "coral": "#FF5252",
+      "sky": "#40C4FF",
+      "lavender": "#B388FF"
+    },
+    "status": {
+      "success": "#00E676",
+      "warning": "#FFD600",
+      "error": "#FF5252",
+      "info": "#40C4FF"
+    }
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Bricolage Grotesque, sans-serif",
+      "weights": ["600", "800"],
+      "letter_spacing": "tracking-tight",
+      "usage": "Use for all main dashboard headings, hero numbers, and motivational messages."
+    },
+    "body": {
+      "font_family": "DM Sans, sans-serif",
+      "weights": ["400", "500", "700"],
+      "usage": "Use for labels, lists, session notes, and general UI text."
+    },
+    "mono": {
+      "font_family": "JetBrains Mono, monospace",
+      "weights": ["500", "700"],
+      "usage": "Use specifically for the Pomodoro Timer countdown and schedule clock."
+    }
+  },
+  "layout": {
+    "structure": "Sidebar navigation (left) + Main Content Area (center) + Contextual Panel (right, optional for Pomodoro/Schedule).",
+    "spacing": "Generous spacing. Use p-6, p-8 on containers to let the dark mode breathe.",
+    "border_radius": "rounded-2xl for main cards, completely pill-shaped (rounded-full) for tags, chips, and buttons."
+  },
+  "component_guidelines": {
+    "duration_chip": {
+      "background": "Vibrant accent color (e.g., yellow #FFD600, mint #00E676)",
+      "text_color": "#000000",
+      "font_weight": "bold",
+      "instruction": "CRITICAL: Per user request, MUST use solid black text for any duration/time metrics (e.g., '7 hr', '45 min'). Wrap these values in a brightly colored background chip (e.g. `bg-[#FFD600] text-black px-3 py-1 rounded-full font-bold`)."
+    },
+    "cards_and_surfaces": {
+      "style": "Dark structural base. `bg-[#13131A]` with subtle 1px border (`border-[#272730]`). Avoid heavy drop shadows in dark mode; instead, rely on colorful glowing hover states or sharp accent borders on the left side of active cards."
+    },
+    "pomodoro_timer": {
+      "style": "Massive circular timer in the center of its section. Clean & minimal. Use SVG to draw a vibrant neon progress ring (using one of the accent colors like Sky or Mint). Use JetBrains Mono for the countdown text (white text for timer, unless placed inside a bright background). Playful controls (Play/Pause) underneath."
+    },
+    "weekly_chart": {
+      "library": "recharts",
+      "style": "Bar chart with rounded tops (radius=[4, 4, 0, 0]). Bars should alternate using the playful accent palette or use a solid vibrant Mint/Yellow. The tooltip must have a dark background with white/accent text for contrast.",
+      "grid": "Hide vertical grid lines. Use subtle dashed horizontal grid lines (`stroke-[#272730]`)."
+    },
+    "schedule_clock": {
+      "style": "List format for alarms with a large prominent current time clock at the top. Incorporate custom music upload via a playful 'file input' button disguised as a neon music note button."
+    },
+    "forms_and_inputs": {
+      "style": "Shadcn components heavily customized: dark background inputs (`bg-[#0A0A0F]`), rounded-xl, 1px subtle border, active focus state gets a vibrant 2px ring (`focus:ring-[#FFD600]`)."
+    }
+  },
+  "media": {
+    "background_image": {
+      "url": "https://images.unsplash.com/photo-1761078739436-ccee01f3d89c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHwxfHxkYXJrJTIwYWJzdHJhY3QlMjB0ZXh0dXJlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzcxMDYzNjh8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Dark, moody abstract background with subtle light streaks. Apply with opacity (e.g., 5-10%) overlaid on the main background color to give an 'upgraded' textured feel without distracting.",
+      "category": "background"
+    },
+    "icons": {
+      "library": "@phosphor-icons/react",
+      "style": "Duotone or bold weight to match the playful aesthetic."
+    }
+  },
+  "motion": {
+    "hover_states": "Buttons and interactive cards should slightly scale up (`hover:-translate-y-1`) with a quick transition (`transition-transform duration-200`).",
+    "progress_bars": "Smooth width transitions for the daily goal progress bar."
+  },
+  "testing": {
+    "data_testid_convention": "All interactive elements and key informational elements (e.g., duration chips, submit buttons, pomodoro play button, subject list items) MUST include a kebab-case, role-based `data-testid` attribute (e.g., `data-testid=\"start-pomodoro-btn\"`)."
+  },
+  "instructions_to_main_agent": [
+    "Install Bricolage Grotesque, DM Sans, and JetBrains Mono from Google Fonts.",
+    "Install @phosphor-icons/react.",
+    "Implement the duration chips EXACTLY as specified in 'duration_chip' (black text on bright background).",
+    "Ensure dark mode is forced or set as the default base, with the vibrant accents providing the 'playful' feel.",
+    "Do not use generic fonts like Inter, Roboto, or Arial."
+  ]
+}

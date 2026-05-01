@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Studi · Daily Study Tracker</title>
+<meta name="description" content="A playful daily study tracker — subjects, pomodoro, schedule, journal, mock tests. Saves to your browser. 100% free, no signup." />
+<meta name="theme-color" content="#FFD600" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Studi" />
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23FFD600' stroke='%231a1a2e' stroke-width='4'/><text x='32' y='44' text-anchor='middle' font-size='38' font-family='sans-serif' font-weight='800' fill='%231a1a2e'>S</text></svg>" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23FFD600'/><rect x='40' y='40' width='432' height='432' rx='80' fill='%23FFD600' stroke='%231a1a2e' stroke-width='20'/><text x='256' y='360' text-anchor='middle' font-family='Arial Black,sans-serif' font-size='320' font-weight='900' fill='%231a1a2e'>S</text></svg>" />
+
+<!-- Tailwind via Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- html2canvas for share PNG -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --cream:#FFF7E3; --cream-2:#FFEFC2; --paper:#FFFFFF;
+    --ink:#1a1a2e; --ink-soft:#4b4b63; --muted:#8e8ea3;
+    --yellow:#FFD600; --mint:#00C896; --coral:#FF6B6B;
+    --sky:#5BC0EB; --lavender:#B388FF; --peach:#FFB38A;
+    --shadow:4px 4px 0 var(--ink); --shadow-sm:3px 3px 0 var(--ink);
+  }
+  *{box-sizing:border-box}
+  html,body{background:var(--cream); color:var(--ink); font-family:'DM Sans',sans-serif;}
+  body{
+    background-image:
+      radial-gradient(rgba(26,26,46,0.08) 1.2px, transparent 1.2px),
+      radial-gradient(ellipse at top right, rgba(255,107,107,0.18), transparent 55%),
+      radial-gradient(ellipse at bottom left, rgba(91,192,235,0.18), transparent 55%);
+    background-size: 22px 22px, 100% 100%, 100% 100%;
+    background-attachment: fixed;
+    margin:0; min-height:100vh;
+  }
+  .h-display{font-family:'Bricolage Grotesque',sans-serif; letter-spacing:-0.02em;}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .nb-card{background:var(--paper); border:2px solid var(--ink); border-radius:18px; box-shadow:var(--shadow);}
+  .nb-card-soft{background:var(--paper); border:2px solid var(--ink); border-radius:18px;}
+  .nb-btn{border:2px solid var(--ink); border-radius:999px; box-shadow:var(--shadow-sm);
+    transition:transform .15s, box-shadow .15s; font-weight:700; cursor:pointer; background:#fff;}
+  .nb-btn:hover{transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--ink);}
+  .nb-btn:active{transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink);}
+  .nb-btn:disabled{opacity:.5; cursor:not-allowed; transform:none; box-shadow:var(--shadow-sm);}
+  .nb-input{background:#fffdf3; border:2px solid var(--ink); border-radius:14px; color:var(--ink); padding:10px 12px; outline:none; width:100%;}
+  .nb-input:focus{box-shadow:var(--shadow-sm); background:#fff;}
+  .sticker{display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border:2px solid var(--ink);
+    border-radius:999px; font-weight:700; color:var(--ink); box-shadow:2px 2px 0 var(--ink); background:#fff;}
+  .chip-black{display:inline-flex; align-items:center; padding:4px 12px; border:2px solid var(--ink);
+    border-radius:999px; font-family:'JetBrains Mono',monospace; font-weight:700; color:#000;
+    box-shadow:2px 2px 0 var(--ink);}
+  .nav-btn{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:16px; cursor:pointer;
+    color:var(--ink-soft); border:2px solid transparent; transition:all .15s;}
+  .nav-btn:hover{background:rgba(255,255,255,.6);}
+  .nav-btn.active{font-weight:700; color:var(--ink); border:2px solid var(--ink); box-shadow:var(--shadow-sm); transform:translate(-1px,-1px);}
+  ::selection{background:var(--yellow); color:var(--ink);}
+  ::-webkit-scrollbar{width:10px; height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--ink); border:2px solid var(--cream); border-radius:999px}
+  details>summary{list-style:none; cursor:pointer}
+  details>summary::-webkit-details-marker{display:none}
+  .dot::before{content:""; display:inline-block; width:6px; height:6px; border-radius:999px; background:var(--ink); margin-right:6px}
+  .hidden-scrollbar::-webkit-scrollbar{display:none}
+  /* Sidebar mobile */
+  @media(max-width:900px){
+    aside.sidebar{position:fixed; left:-100%; top:0; height:100vh; width:260px; z-index:40; transition:left .25s;}
+    aside.sidebar.open{left:0;}
+    .menu-toggle{display:inline-flex !important;}
+    main{padding:16px !important;}
+  }
+  .menu-toggle{display:none}
+  textarea.nb-input{min-height:160px; resize:vertical}
+  @keyframes pulse {
+    0%,100% { transform: scale(1); box-shadow: 3px 3px 0 var(--ink); }
+    50%     { transform: scale(1.05); box-shadow: 5px 5px 0 var(--ink); }
+  }
+</style>
+</head>
+<body>
+
+<div class="min-h-screen flex">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar w-64 shrink-0 sticky top-0 h-screen p-5 flex flex-col" style="border-right:2px solid var(--ink); background:#FFF7E3">
+    <div class="mb-8 px-1 flex items-center gap-2">
+      <span class="inline-flex items-center justify-center h-10 w-10 rounded-2xl text-xl"
+        style="background:#FFD600; border:2px solid var(--ink); box-shadow:3px 3px 0 var(--ink); font-weight:800;">S</span>
+      <div>
+        <h1 class="h-display text-2xl font-extrabold leading-none">Studi<span style="color:#FF6B6B">.</span></h1>
+        <p class="text-xs mt-1" style="color:var(--ink-soft)">your playful study buddy</p>
+      </div>
+    </div>
+    <nav id="nav" class="flex flex-col gap-1.5"></nav>
+    <div class="mt-auto px-2 text-[10px] uppercase tracking-widest" style="color:var(--muted)">focus · log · grow</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-6 md:p-10 max-w-6xl mx-auto w-full">
+    <button class="menu-toggle nb-btn px-3 py-1.5 mb-3" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ Menu</button>
+    <div id="view"></div>
+  </main>
+</div>
+
+<!-- Modal root -->
+<div id="modal-root"></div>
+
+<!-- PWA install FAB (Android/Desktop) -->
+<button id="install-fab" style="display:none; position:fixed; bottom:20px; right:20px; z-index:30; background:#FFD600;" class="nb-btn px-4 py-3 inline-flex items-center gap-2">⬇ Install Studi</button>
+
+<!-- iOS install hint (shows once for iPhone/iPad Safari) -->
+<div id="ios-hint" style="display:none; position:fixed; left:16px; right:16px; bottom:16px; z-index:30; padding:14px 16px; background:#FFFFFF;" class="nb-card flex items-start gap-3">
+  <span style="font-size:24px">📲</span>
+  <div class="flex-1 text-sm">
+    <div class="h-display font-extrabold mb-0.5">Install Studi on your home screen</div>
+    <div style="color:var(--ink-soft)">Tap the <b>Share</b> button in Safari, then <b>"Add to Home Screen"</b>.</div>
+  </div>
+  <button id="ios-hint-close" class="nb-btn px-2 py-1 text-xs" style="background:#fff">✕</button>
+</div>
+
+<script>
+/* =================== Storage =================== */
+const KEY = "studi.v1";
+const defaults = {
+  subjects: [],
+  sessions: [],
+  journal: [],
+  mocks: [],
+  settings: { daily_goal_minutes: 240, pomodoro_work: 25, pomodoro_break: 5 },
+  alarms: [],
+  music: null, // {name, dataUrl}
+};
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (!raw) return structuredClone(defaults);
+    return { ...structuredClone(defaults), ...raw,
+      settings: { ...defaults.settings, ...(raw.settings||{}) } };
+  } catch { return structuredClone(defaults); }
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+let state = load();
+
+/* =================== Helpers =================== */
+const uid = () => (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)+Date.now());
+const todayStr = () => new Date().toISOString().slice(0,10);
+const fmtMins = (m) => {
+  if (!m && m!==0) return "0 min";
+  const h=Math.floor(m/60), r=m%60;
+  if (h && r) return `${h} hr ${r} min`;
+  if (h) return `${h} hr`;
+  return `${r} min`;
+};
+const escapeHtml = (s) => (s||"").toString()
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const ACCENTS = ["#FFD600","#00C896","#5BC0EB","#B388FF","#FF6B6B","#FFB38A"];
+const MOODS = [
+  { id:"great", emoji:"🤩", label:"great", color:"#00C896" },
+  { id:"good",  emoji:"😊", label:"good",  color:"#FFD600" },
+  { id:"okay",  emoji:"🙂", label:"okay",  color:"#FFB38A" },
+  { id:"meh",   emoji:"😐", label:"meh",   color:"#B388FF" },
+  { id:"bad",   emoji:"😩", label:"bad",   color:"#FF6B6B" },
+];
+
+/* =================== Stats helpers =================== */
+function todayStats() {
+  const t = todayStr();
+  const sess = state.sessions.filter(s=>s.date===t);
+  const total = sess.reduce((a,b)=>a+b.duration_minutes,0);
+  const by = {};
+  sess.forEach(s=>{ by[s.subject_name]=(by[s.subject_name]||0)+s.duration_minutes; });
+  return { total_minutes:total, by_subject:by, sessions_count:sess.length, goal_minutes: state.settings.daily_goal_minutes };
+}
+function weeklyStats() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const days = [];
+  for (let i=6;i>=0;i--) {
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    const mins = state.sessions.filter(s=>s.date===ds).reduce((a,b)=>a+b.duration_minutes,0);
+    days.push({ date:ds, label:d.toLocaleDateString(undefined,{weekday:"short"}), minutes:mins });
+  }
+  return days;
+}
+function streakStats() {
+  const set = new Set(state.sessions.map(s=>s.date));
+  let cur = new Date(); cur.setHours(0,0,0,0);
+  if (!set.has(cur.toISOString().slice(0,10))) cur.setDate(cur.getDate()-1);
+  let streak = 0;
+  while (set.has(cur.toISOString().slice(0,10))) { streak++; cur.setDate(cur.getDate()-1); }
+  let longest=0;
+  if (set.size) {
+    const sorted = [...set].sort();
+    let c=1; longest=1;
+    for (let i=1;i<sorted.length;i++){
+      const a=new Date(sorted[i-1]), b=new Date(sorted[i]);
+      if ((b-a)/86400000===1){c++; longest=Math.max(longest,c);} else c=1;
+    }
+  }
+  return { current:streak, longest, active_days:set.size };
+}
+function mockStats() {
+  const items = state.mocks;
+  if (!items.length) return { count:0, avg:0, best:0, worst:0, trend:[] };
+  const pcts = items.map(m=>m.percentage);
+  const sorted = [...items].sort((a,b)=>a.date.localeCompare(b.date));
+  return {
+    count: items.length,
+    avg: +(pcts.reduce((a,b)=>a+b,0)/pcts.length).toFixed(2),
+    best: Math.max(...pcts),
+    worst: Math.min(...pcts),
+    trend: sorted.map(m=>({ date:m.date, name:m.name, percentage:m.percentage }))
+  };
+}
+
+/* =================== Router =================== */
+const VIEWS = [
+  { id:"today",     label:"Today",      icon:"🏠", color:"#FFD600" },
+  { id:"subjects",  label:"Subjects",   icon:"📚", color:"#5BC0EB" },
+  { id:"pomodoro",  label:"Pomodoro",   icon:"⏱️", color:"#FF6B6B" },
+  { id:"schedule",  label:"Schedule",   icon:"⏰", color:"#B388FF" },
+  { id:"journal",   label:"Journal",    icon:"📓", color:"#FFB38A" },
+  { id:"mocks",     label:"Mock Tests", icon:"📝", color:"#00C896" },
+  { id:"stats",     label:"Stats",      icon:"📊", color:"#FFD600" },
+  { id:"records",   label:"Records",    icon:"🕘", color:"#5BC0EB" },
+  { id:"settings",  label:"Settings",   icon:"⚙️", color:"#B388FF" },
+];
+let active = "today";
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = VIEWS.map(v=>`
+    <button class="nav-btn ${active===v.id?'active':''}" data-id="${v.id}"
+      style="${active===v.id?`background:${v.color}`:''}">
+      <span>${v.icon}</span><span>${v.label}</span>
+    </button>`).join("");
+  nav.querySelectorAll("button").forEach(b=>b.onclick=()=>{ active=b.dataset.id; render(); document.getElementById('sidebar').classList.remove('open'); });
+}
+function render(){ renderNav(); const el = document.getElementById("view");
+  el.innerHTML = ""; (VIEW_FNS[active] || (()=>"") )(el);
+  // Re-init any charts in this view
+  setTimeout(initCharts, 0);
+}
+
+/* =================== Reusable bits =================== */
+function chipBlack(mins, color="#FFD600", rotate=0){
+  return `<span class="chip-black" style="background:${color}; transform:rotate(${rotate}deg);">${escapeHtml(fmtMins(mins))}</span>`;
+}
+function pageTitle(title, accent){
+  return `<h2 class="h-display text-5xl font-extrabold mb-2">${title}<span style="color:${accent}">.</span></h2>`;
+}
+
+/* =================== TODAY VIEW =================== */
+const VIEW_FNS = {};
+VIEW_FNS.today = (el) => {
+  const ts = todayStats(), st = streakStats(), goal = state.settings.daily_goal_minutes;
+  const pct = Math.min(100, Math.round((ts.total_minutes/goal)*100));
+  el.innerHTML = `
+    <div class="space-y-6">
+      <div class="flex items-baseline justify-between flex-wrap gap-3">
+        <div>
+          ${pageTitle("Today", "#FF6B6B")}
+          <p style="color:var(--ink-soft)">${new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})}</p>
+        </div>
+        <button id="share-btn" class="nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#B388FF">🔗 Share my streak</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 nb-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-bold uppercase tracking-widest" style="color:var(--ink-soft)">🎯 Daily Goal</div>
+            ${chipBlack(goal,"#5BC0EB",2)}
+          </div>
+          <div class="flex items-end gap-4 mb-4">
+            <div class="h-display text-7xl font-extrabold leading-none">${pct}%</div>
+            <div class="pb-2">
+              ${chipBlack(ts.total_minutes,"#FFD600",-2)}
+              <div class="text-xs mt-2 font-bold uppercase tracking-widest" style="color:var(--ink-soft)">studied today</div>
+            </div>
+          </div>
+          <div style="height:14px; width:100%; border:2px solid var(--ink); border-radius:999px; overflow:hidden; background:#FFEFC2">
+            <div style="height:100%; width:${pct}%; background:linear-gradient(90deg,#FFD600,#00C896); transition:width .5s;"></div>
+          </div>
+        </div>
+
+        <div class="nb-card p-6 flex flex-col justify-between" style="background:#FF6B6B">
+          <div class="text-sm font-bold uppercase tracking-widest">🔥 Streak</div>
+          <div>
+            <div class="h-display text-7xl font-extrabold">${st.current}<span class="text-2xl" style="opacity:.7"> days</span></div>
+            <div class="mt-3 flex gap-2 flex-wrap">
+              <span class="sticker text-xs" style="background:#FFD600">longest ${st.longest}d</span>
+              <span class="sticker text-xs" style="background:#fff">active ${st.active_days}d</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <form id="log-form" class="nb-card p-6">
+        <h3 class="h-display text-2xl font-extrabold mb-4">Log a study session ✏️</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <select id="log-subj" class="nb-input">
+            ${state.subjects.length===0?'<option value="">No subjects — add one first</option>':''}
+            ${state.subjects.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
+          </select>
+          <input id="log-dur" type="number" min="1" value="25" class="nb-input" placeholder="Minutes" />
+          <input id="log-notes" type="text" class="nb-input" placeholder="Notes (optional)" />
+          <button type="submit" class="nb-btn px-4 py-2.5" style="background:#FFD600" ${state.subjects.length===0?'disabled':''}>Log Session</button>
+        </div>
+      </form>
+
+      ${Object.keys(ts.by_subject).length>0 ? `
+      <div class="nb-card p-6">
+        <h3 class="h-display text-xl font-extrabold mb-4">Today by subject</h3>
+        <div class="flex flex-wrap gap-3">
+          ${Object.entries(ts.by_subject).map(([n,m],i)=>`
+            <div class="flex items-center gap-2 nb-card-soft px-3 py-1.5">
+              <span class="text-sm font-bold">${escapeHtml(n)}</span>
+              ${chipBlack(m, ACCENTS[i%ACCENTS.length])}
+            </div>`).join("")}
+        </div>
+      </div>` : ""}
+    </div>
+  `;
+
+  document.getElementById("share-btn").onclick = openShareModal;
+  document.getElementById("log-form").addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const sid = document.getElementById("log-subj").value;
+    const dur = +document.getElementById("log-dur").value;
+    const notes = document.getElementById("log-notes").value;
+    if (!sid || !dur) return;
+    const subj = state.subjects.find(s=>s.id===sid);
+    state.sessions.push({ id:uid(), subject_id:sid, subject_name:subj.name, duration_minutes:dur, notes, date:todayStr(), started_at:new Date().toISOString() });
+    save(); render();
+  });
+};
+
+/* =================== SHARE STREAK MODAL =================== */
+function openShareModal(){
+  const st = streakStats(), ts = todayStats(), w = weeklyStats();
+  const totalWeek = w.reduce((a,b)=>a+b.minutes,0);
+  const maxMin = Math.max(1, ...w.map(d=>d.minutes));
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(26,26,46,0.6); backdrop-filter:blur(4px)">
+    <div class="max-w-lg w-full">
+      <div class="flex items-center justify-between mb-3">
+        <div class="h-display font-bold text-white text-lg">Share my streak ✨</div>
+        <button id="close-share" class="nb-btn px-3 py-1.5 text-sm">Close</button>
+      </div>
+      <div id="share-card" style="background:linear-gradient(135deg,#FFD600 0%,#FFB38A 50%,#FF6B6B 100%); border:3px solid #1a1a2e; box-shadow:8px 8px 0 #1a1a2e; border-radius:24px; padding:28px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:-24px; right:-24px; height:128px; width:128px; border-radius:999px; background:#5BC0EB; border:3px solid #1a1a2e;"></div>
+        <div style="position:absolute; bottom:-32px; left:-16px; height:96px; width:96px; border-radius:999px; background:#B388FF; border:3px solid #1a1a2e;"></div>
+        <div style="position:relative">
+          <div class="text-xs uppercase tracking-widest font-bold">✨ studi · streak</div>
+          <div class="mt-4 flex items-end gap-3">
+            <div class="h-display" style="font-size:96px; font-weight:800; line-height:1;">${st.current}</div>
+            <div style="padding-bottom:8px; font-size:18px; font-weight:700;">days strong 🔥</div>
+          </div>
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <div style="background:rgba(255,255,255,.9); border:2px solid #1a1a2e; border-radius:16px; padding:12px;">
+              <div class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--ink-soft)">today</div>
+              <div class="mt-1 chip-black" style="background:#FFD600">${escapeHtml(fmtMins(ts.total_minutes))}</div>
+            </div>
+            <div style="background:rgba(255,255,255,.9); border:2px solid #1a1a2e; border-radius:16px; padding:12px;">
+              <div class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--ink-soft)">this week</div>
+              <div class="mt-1 chip-black" style="background:#00C896">${escapeHtml(fmtMins(totalWeek))}</div>
+            </div>
+          </div>
+          <div class="mt-6 flex items-end justify-between gap-2" style="height:80px">
+            ${w.map((d,i)=>{
+              const h = Math.max(6, (d.minutes/maxMin)*70);
+              return `<div style="display:flex; flex-direction:column; align-items:center; gap:4px; flex:1;">
+                <div style="width:100%; height:${h}px; background:${ACCENTS[i%ACCENTS.length]}; border:2px solid #1a1a2e; border-radius:6px 6px 0 0;"></div>
+                <span class="text-[10px] font-bold">${d.label[0]}</span></div>`;
+            }).join("")}
+          </div>
+          <div class="mt-5 text-sm font-bold">made with Studi · join the streak</div>
+        </div>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button id="dl-share" class="nb-btn px-5 py-2.5 inline-flex items-center gap-2" style="background:#FFD600">⬇ Download PNG</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("close-share").onclick = ()=>root.innerHTML="";
+  document.getElementById("dl-share").onclick = async ()=>{
+    const card = document.getElementById("share-card");
+    const canvas = await html2canvas(card, { backgroundColor:null, scale:2, useCORS:true });
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png"); a.download = `studi-streak-${todayStr()}.png`; a.click();
+  };
+}
+
+/* =================== SUBJECTS =================== */
+VIEW_FNS.subjects = (el) => {
+  el.innerHTML = `
+    ${pageTitle("Subjects","#5BC0EB")}
+    <form id="subj-form" class="nb-card p-6 mt-4">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+        <input id="s-name" placeholder="Subject name (e.g. Mathematics)" class="md:col-span-5 nb-input" />
+        <input id="s-target" type="number" min="1" value="60" placeholder="Daily target (min)" class="md:col-span-2 nb-input" />
+        <div id="s-colors" class="md:col-span-3 nb-input flex items-center gap-2" style="padding:8px 12px"></div>
+        <button type="submit" class="md:col-span-2 nb-btn px-4 py-2.5 inline-flex items-center justify-center gap-2" style="background:#00C896">+ Add</button>
+      </div>
+    </form>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6" id="subj-list"></div>
+  `;
+  // colors
+  let pickedColor = ACCENTS[0];
+  const cw = document.getElementById("s-colors");
+  cw.innerHTML = ACCENTS.map(c=>`<button type="button" data-c="${c}" style="height:24px; width:24px; border:2px solid var(--ink); border-radius:999px; background:${c};"></button>`).join("");
+  cw.querySelectorAll("button").forEach(b=>b.onclick=()=>{ pickedColor=b.dataset.c; cw.querySelectorAll("button").forEach(x=>x.style.transform=""); b.style.transform="scale(1.25)"; });
+  cw.querySelector("button").style.transform="scale(1.25)";
+
+  document.getElementById("subj-form").addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const name = document.getElementById("s-name").value.trim();
+    const target = +document.getElementById("s-target").value;
+    if (!name) return;
+    state.subjects.push({ id:uid(), name, color:pickedColor, target_minutes_daily:target, created_at:new Date().toISOString() });
+    save(); render();
+  });
+
+  const list = document.getElementById("subj-list");
+  if (state.subjects.length===0){
+    list.innerHTML = `<div class="md:col-span-2 text-center py-10" style="color:var(--ink-soft)">No subjects yet. Add your first one above.</div>`;
+  } else {
+    list.innerHTML = state.subjects.map(s=>`
+      <div class="nb-card p-5 flex items-center justify-between gap-4" style="background:${s.color}33">
+        <div class="flex-1 min-w-0">
+          <div class="h-display text-xl font-extrabold truncate">${escapeHtml(s.name)}</div>
+          <div class="flex items-center gap-2 mt-2 text-xs" style="color:var(--ink-soft)">
+            <span class="font-bold uppercase tracking-widest">target</span>
+            ${chipBlack(s.target_minutes_daily, s.color)}
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="nb-btn p-2" style="background:#fff" data-act="edit" data-id="${s.id}">✏️</button>
+          <button class="nb-btn p-2" style="background:#FF6B6B" data-act="del" data-id="${s.id}">🗑</button>
+        </div>
+      </div>`).join("");
+    list.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const id = b.dataset.id, s = state.subjects.find(x=>x.id===id);
+      if (b.dataset.act==="del"){
+        if (!confirm("Delete this subject? Past sessions are kept.")) return;
+        state.subjects = state.subjects.filter(x=>x.id!==id); save(); render();
+      } else {
+        const newName = prompt("New name", s.name); if (newName===null) return;
+        const newTarget = +(prompt("Daily target (min)", s.target_minutes_daily)||s.target_minutes_daily);
+        s.name = newName.trim()||s.name; s.target_minutes_daily = newTarget;
+        // propagate name to sessions
+        state.sessions.forEach(x=>{ if (x.subject_id===id) x.subject_name=s.name; });
+        save(); render();
+      }
+    });
+  }
+};
+
+/* =================== POMODORO =================== */
+let pomoState = { mode:"work", running:false, remaining:0, timer:null, subjectId:"" };
+function pomoTotals(){ return { work: state.settings.pomodoro_work*60, brk: state.settings.pomodoro_break*60 }; }
+function pomoBeep(){
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination); o.frequency.value=880; g.gain.setValueAtTime(0.3,ctx.currentTime);
+    o.start(); o.stop(ctx.currentTime+0.6);
+  } catch(e){}
+}
+VIEW_FNS.pomodoro = (el) => {
+  const t = pomoTotals();
+  if (!pomoState.remaining) pomoState.remaining = t.work;
+  if (!pomoState.subjectId && state.subjects[0]) pomoState.subjectId = state.subjects[0].id;
+  const total = pomoState.mode==="work"?t.work:t.brk;
+  const pct = ((total-pomoState.remaining)/total)*100;
+  const min = Math.floor(pomoState.remaining/60), sec = pomoState.remaining%60;
+  const ringColor = pomoState.mode==="work" ? "#00C896" : "#5BC0EB";
+  const RAD=110, CIRC=2*Math.PI*RAD, dash=(pct/100)*CIRC;
+  el.innerHTML = `
+    ${pageTitle("Pomodoro","#FF6B6B")}
+    <div class="nb-card p-8 flex flex-col items-center mt-4">
+      <div class="flex gap-2 mb-6">
+        <button id="m-work" class="nb-btn px-4 py-2 text-sm" style="background:${pomoState.mode==='work'?'#00C896':'#fff'}">Work · ${state.settings.pomodoro_work}m</button>
+        <button id="m-brk"  class="nb-btn px-4 py-2 text-sm" style="background:${pomoState.mode==='break'?'#5BC0EB':'#fff'}">Break · ${state.settings.pomodoro_break}m</button>
+      </div>
+      <div style="position:relative; width:260px; height:260px;">
+        <svg width="260" height="260" style="transform:rotate(-90deg)">
+          <circle cx="130" cy="130" r="${RAD}" stroke="#FFEFC2" stroke-width="14" fill="none"/>
+          <circle cx="130" cy="130" r="${RAD}" stroke="${ringColor}" stroke-width="14" fill="none"
+            stroke-dasharray="${dash} ${CIRC}" stroke-linecap="round" style="transition:stroke-dasharray .5s linear;"/>
+        </svg>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <div class="mono" style="font-size:60px; font-weight:700;">${String(min).padStart(2,"0")}:${String(sec).padStart(2,"0")}</div>
+          <div class="text-xs uppercase tracking-widest mt-2 font-bold" style="color:var(--ink-soft)">${pomoState.mode}</div>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center gap-3 flex-wrap justify-center">
+        <select id="p-subj" class="nb-input text-sm" style="width:auto">
+          ${state.subjects.length===0?'<option value="">Add subjects first</option>':''}
+          ${state.subjects.map(s=>`<option value="${s.id}" ${s.id===pomoState.subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join("")}
+        </select>
+        <button id="p-toggle" class="nb-btn px-6 py-3 inline-flex items-center gap-2" style="background:#FFD600" ${(!pomoState.subjectId && pomoState.mode==='work')?'disabled':''}>
+          ${pomoState.running?'⏸ Pause':'▶ Start'}
+        </button>
+        <button id="p-reset" class="nb-btn px-4 py-3" style="background:#fff">⟳</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("m-work").onclick = ()=>{ pomoStop(); pomoState.mode="work"; pomoState.remaining=t.work; render(); };
+  document.getElementById("m-brk").onclick  = ()=>{ pomoStop(); pomoState.mode="break"; pomoState.remaining=t.brk; render(); };
+  document.getElementById("p-subj").onchange= (e)=>{ pomoState.subjectId = e.target.value; };
+  document.getElementById("p-reset").onclick= ()=>{ pomoStop(); pomoState.remaining = pomoState.mode==="work"?t.work:t.brk; render(); };
+  document.getElementById("p-toggle").onclick=()=>{ pomoState.running ? pomoStop() : pomoStart(); render(); };
+};
+function pomoStop(){ if (pomoState.timer){clearInterval(pomoState.timer); pomoState.timer=null;} pomoState.running=false; }
+function pomoStart(){
+  pomoState.running = true;
+  pomoState.timer = setInterval(()=>{
+    pomoState.remaining -= 1;
+    // partial DOM update for smoothness
+    if (active==="pomodoro"){
+      const m=Math.floor(pomoState.remaining/60), s=pomoState.remaining%60;
+      const node = document.querySelector(".mono");
+      if (node) node.textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+    if (pomoState.remaining<=0){
+      pomoStop(); pomoBeep();
+      const t = pomoTotals();
+      if (pomoState.mode==="work" && pomoState.subjectId){
+        const subj = state.subjects.find(x=>x.id===pomoState.subjectId);
+        if (subj){
+          state.sessions.push({ id:uid(), subject_id:subj.id, subject_name:subj.name,
+            duration_minutes: state.settings.pomodoro_work, notes:"Pomodoro session",
+            date:todayStr(), started_at:new Date().toISOString() });
+          save();
+        }
+      }
+      pomoState.mode = pomoState.mode==="work" ? "break" : "work";
+      pomoState.remaining = pomoState.mode==="work" ? t.work : t.brk;
+      if (active==="pomodoro") render();
+    }
+  }, 1000);
+}
+
+/* =================== SCHEDULE =================== */
+/* =================== SCHEDULE & ALARMS =================== */
+let alarmsTriggered = new Set(); // dayKey-id-kind
+let lastTickMinute = "";          // "HH:MM" of previous tick — used to catch up across throttled gaps
+let audioUnlocked = false;        // true once user gesture has primed audio
+let sharedAudioCtx = null;        // reused AudioContext (must be created on user gesture)
+let activeBeepTimers = [];        // running default-beep timeouts (so we can stop)
+let activeMusicEl = null;         // running uploaded-music <audio> (so we can stop)
+let audioPlaying = false;         // true while alarm sound (music or beeps) is currently audible
+let editingAlarmId = null;        // UI: id of alarm currently in edit mode
+
+function curMinute(d=new Date()){
+  return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+function dayKey(d=new Date()){ return d.toISOString().slice(0,10); }
+
+// Returns true if `t` (HH:MM) falls strictly after `from` and on/before `to` within the same day.
+function timeInWindow(t, from, to){
+  if (!t || !from || !to) return false;
+  if (from === to) return t === to;
+  if (from < to) return t > from && t <= to;
+  // wrap past midnight (e.g., 23:59 → 00:00)
+  return t > from || t <= to;
+}
+
+// Try to unlock audio playback on first user interaction (required by browser autoplay policies)
+function unlockAudio(){
+  if (audioUnlocked) return;
+  try {
+    sharedAudioCtx = sharedAudioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    if (sharedAudioCtx.state === "suspended") sharedAudioCtx.resume();
+    // play a 1-frame silent buffer to "prime" iOS Safari
+    const buf = sharedAudioCtx.createBuffer(1, 1, 22050);
+    const src = sharedAudioCtx.createBufferSource();
+    src.buffer = buf; src.connect(sharedAudioCtx.destination); src.start(0);
+    audioUnlocked = true;
+    updateSoundBadge();
+  } catch(e){ console.warn("audio unlock failed", e); }
+}
+["click","touchstart","keydown","pointerdown"].forEach(ev=>{
+  window.addEventListener(ev, unlockAudio, { once:false, passive:true });
+});
+
+function updateSoundBadge(){
+  const el = document.getElementById("sound-status");
+  if (!el) return;
+  if (audioUnlocked){
+    el.style.background = "#00C896"; el.textContent = "🔊 Sound ready";
+  } else {
+    el.style.background = "#FF6B6B"; el.textContent = "⚠ Tap anywhere to enable sound";
+  }
+}
+
+function stopAlarm(){
+  activeBeepTimers.forEach(id=>clearTimeout(id));
+  activeBeepTimers = [];
+  if (activeMusicEl){ try { activeMusicEl.pause(); activeMusicEl.currentTime = 0; } catch(e){} activeMusicEl = null; }
+  audioPlaying = false;
+  updateStopFab();
+  if (titleFlashTimer) { clearInterval(titleFlashTimer); titleFlashTimer = null; document.title = "Studi · Daily Study Tracker"; }
+}
+
+function updateStopFab(){
+  let fab = document.getElementById("stop-alarm-fab");
+  if (audioPlaying){
+    if (!fab) {
+      fab = document.createElement("button");
+      fab.id = "stop-alarm-fab";
+      fab.className = "nb-btn";
+      fab.style.cssText = "position:fixed; bottom:90px; right:20px; z-index:35; padding:14px 20px; background:#FF6B6B; font-weight:800; font-size:16px; animation:pulse 1.2s ease-in-out infinite;";
+      fab.innerHTML = "🔇 Stop alarm";
+      fab.onclick = ()=>{ stopAlarm(); };
+      document.body.appendChild(fab);
+    }
+  } else {
+    if (fab) fab.remove();
+  }
+}
+
+function playAlarm(soundUrl){
+  stopAlarm();
+  audioPlaying = true;
+  updateStopFab();
+  const url = soundUrl || state.music?.dataUrl;
+  // 1) If a sound URL is supplied (per-alarm or global), play it ONCE
+  if (url){
+    try {
+      const a = new Audio(url);
+      a.loop = false; a.volume = 1;
+      activeMusicEl = a;
+      a.onended = ()=>{ audioPlaying = false; activeMusicEl = null; updateStopFab(); };
+      const p = a.play();
+      if (p && p.catch) p.catch(err => {
+        console.warn("music play blocked", err);
+        defaultBeepLoop(); // fallback to beeps
+      });
+      // safety auto-stop after 60s
+      activeBeepTimers.push(setTimeout(()=>{ stopAlarm(); }, 60000));
+      return;
+    } catch(e){ console.warn(e); }
+  }
+  defaultBeepLoop();
+}
+
+function defaultBeepLoop(){
+  try {
+    sharedAudioCtx = sharedAudioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    if (sharedAudioCtx.state === "suspended") sharedAudioCtx.resume();
+    const ctx = sharedAudioCtx;
+    // 8 attention-grabbing beeps over ~6s, alternating frequency
+    const PATTERN = 8, GAP = 0.7;
+    for (let i = 0; i < PATTERN; i++){
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = i % 2 ? "square" : "sine";
+      o.frequency.value = i % 2 ? 660 : 990;
+      o.connect(g); g.connect(ctx.destination);
+      const t0 = ctx.currentTime + i * GAP;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.4, t0 + 0.02);
+      g.gain.linearRampToValueAtTime(0, t0 + 0.4);
+      o.start(t0); o.stop(t0 + 0.45);
+    }
+    // mark playing & schedule auto-clear at end of pattern
+    audioPlaying = true;
+    updateStopFab();
+    activeBeepTimers.push(setTimeout(()=>{ audioPlaying = false; updateStopFab(); }, (PATTERN * GAP * 1000) + 200));
+  } catch(e){ console.warn("beep failed", e); audioPlaying = false; updateStopFab(); }
+}
+
+function showAlarmToast(msg, opts){
+  const root = document.getElementById("modal-root");
+  const id = "toast-" + Date.now();
+  const el = document.createElement("div");
+  el.id = id;
+  el.className = "nb-card";
+  el.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:60; padding:14px 20px; background:#FFD600; display:flex; align-items:center; gap:14px; max-width:90vw; flex-wrap:wrap;";
+  const showCheckin = !!(opts && opts.checkin);
+  const showSnooze = !!(opts && opts.alarm);
+  const hint = [
+    showCheckin ? '"Start studying"' : null,
+    showSnooze ? '"Snooze 5 min"' : null,
+    'Stop'
+  ].filter(Boolean).join(" · ");
+  el.innerHTML = `<span style="font-size:28px">⏰</span>
+    <div class="flex-1" style="min-width:200px">
+      <div class="h-display font-extrabold text-lg">${escapeHtml(msg)}</div>
+      <div class="text-xs" style="color:var(--ink-soft)">Tap ${hint}</div>
+    </div>
+    ${showCheckin?'<button class="nb-btn px-3 py-2 text-xs" data-act="checkin" style="background:#00C896">▶ Start studying</button>':''}
+    ${showSnooze?'<button class="nb-btn px-3 py-2 text-xs" data-act="snooze" style="background:#B388FF">💤 Snooze 5</button>':''}
+    <button class="nb-btn px-3 py-1 text-xs" data-act="stop" style="background:#fff">Stop</button>`;
+  root.appendChild(el);
+  const dismiss = ()=>{ stopAlarm(); el.remove(); };
+  el.addEventListener("click", (ev)=>{
+    const act = ev.target?.closest("[data-act]")?.dataset?.act;
+    if (act === "stop") { ev.stopPropagation(); dismiss(); return; }
+    if (act === "checkin"){
+      ev.stopPropagation();
+      dismiss();
+      startStudyCheckin(opts.alarm);
+      return;
+    }
+    if (act === "snooze"){
+      ev.stopPropagation();
+      stopAlarm();
+      el.remove();
+      snoozeAlarm(opts.alarm, opts.kind || "start", 5);
+      return;
+    }
+    if (!showCheckin && !showSnooze) dismiss();
+  });
+  setTimeout(()=>{ if (document.getElementById(id)) document.getElementById(id).remove(); }, 25000);
+  flashTitle("⏰ " + msg);
+  if (navigator.vibrate) try { navigator.vibrate([300,150,300,150,300]); } catch(e){}
+}
+
+let snoozeTimers = [];
+function snoozeAlarm(alarm, kind, minutes){
+  if (!alarm) return;
+  showSnoozeToast(`💤 Snoozed "${alarm.label || 'Study block'}" for ${minutes} min`);
+  const handle = setTimeout(()=>{
+    snoozeTimers = snoozeTimers.filter(h=>h!==handle);
+    // Re-fire
+    const perAlarmSound = kind === "start" ? alarm.startMusicData : alarm.endMusicData;
+    playAlarm(perAlarmSound || null);
+    const verb = kind === "start" ? "starting" : "ended";
+    const symbol = kind === "start" ? "▶" : "⏹";
+    showAlarmToast(`${symbol} ${alarm.label || "Study block"} ${verb} (snoozed)`, { alarm, kind, checkin: kind === "start" });
+    if ("Notification" in window && Notification.permission === "granted"){
+      try { new Notification("Studi", { body:`${symbol} ${alarm.label || "Study block"} ${verb} (snoozed)` }); } catch(e){}
+    }
+  }, minutes * 60 * 1000);
+  snoozeTimers.push(handle);
+}
+
+function showSnoozeToast(msg){
+  const root = document.getElementById("modal-root");
+  const id = "snooze-" + Date.now();
+  const el = document.createElement("div");
+  el.id = id;
+  el.className = "nb-card";
+  el.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:60; padding:10px 18px; background:#B388FF; display:flex; align-items:center; gap:10px;";
+  el.innerHTML = `<span style="font-size:22px">💤</span><span class="h-display font-bold">${escapeHtml(msg)}</span>`;
+  root.appendChild(el);
+  setTimeout(()=>{ if (document.getElementById(id)) document.getElementById(id).remove(); }, 2800);
+}
+
+// Study check-in: log a 1-min "started" session for the alarm's subject (or first subject) and auto-start the Pomodoro
+function startStudyCheckin(alarm){
+  let subj = null;
+  if (alarm && alarm.subjectId) subj = state.subjects.find(s=>s.id===alarm.subjectId) || null;
+  if (!subj) subj = state.subjects[0] || null;
+  if (!subj){
+    showAlarmToast("Add a subject first to use check-in");
+    active = "subjects"; render();
+    return;
+  }
+  state.sessions.push({
+    id: uid(), subject_id: subj.id, subject_name: subj.name,
+    duration_minutes: 1, notes: `✏️ Started via alarm: ${alarm?.label || "Study block"}`,
+    date: todayStr(), started_at: new Date().toISOString()
+  });
+  save();
+  // Configure & start Pomodoro for this subject
+  const t = pomoTotals();
+  pomoStop();
+  pomoState.mode = "work";
+  pomoState.subjectId = subj.id;
+  pomoState.remaining = t.work;
+  pomoStart();
+  active = "pomodoro";
+  render();
+}
+
+let titleFlashTimer = null;
+function flashTitle(msg){
+  const orig = "Studi · Daily Study Tracker";
+  if (titleFlashTimer) { clearInterval(titleFlashTimer); document.title = orig; }
+  let on = true; let count = 0;
+  titleFlashTimer = setInterval(()=>{
+    document.title = on ? msg : orig;
+    on = !on; count++;
+    if (count > 14) { clearInterval(titleFlashTimer); titleFlashTimer = null; document.title = orig; }
+  }, 700);
+}
+
+function fireAlarm(alarm, kind){
+  const k = `${dayKey()}-${alarm.id}-${kind}`;
+  if (alarmsTriggered.has(k)) return;
+  alarmsTriggered.add(k);
+  // Per-alarm sound takes precedence over global music; falls back to default beep
+  const perAlarmSound = kind === "start" ? alarm.startMusicData : alarm.endMusicData;
+  playAlarm(perAlarmSound || null);
+  const verb = kind === "start" ? "starting" : "ended";
+  const symbol = kind === "start" ? "▶" : "⏹";
+  showAlarmToast(`${symbol} ${alarm.label || "Study block"} ${verb}`, { alarm, kind, checkin: kind === "start" });
+  if ("Notification" in window && Notification.permission === "granted"){
+    try { new Notification("Studi", { body:`${symbol} ${alarm.label || "Study block"} ${verb}`, icon:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23FFD600'/><text x='32' y='44' text-anchor='middle' font-size='38' font-family='sans-serif' font-weight='800' fill='%231a1a2e'>S</text></svg>" }); } catch(e){}
+  }
+}
+
+function alarmsTick(){
+  const now = new Date();
+  const cur = curMinute(now);
+  if (cur === lastTickMinute) return;       // only act on minute change
+  const prev = lastTickMinute || cur;        // first tick: check exact only
+  lastTickMinute = cur;
+
+  state.alarms.forEach(a=>{
+    [["start",a.startTime],["end",a.endTime]].forEach(([kind,time])=>{
+      if (!time) return;
+      // First-tick of session: exact match only
+      // Subsequent ticks: trigger if alarm time is in (prev, cur] window — handles throttled / suspended tabs
+      const hit = (prev === cur) ? (time === cur) : timeInWindow(time, prev, cur);
+      if (hit) fireAlarm(a, kind);
+    });
+  });
+}
+
+// Reset day-bucket when day changes (so alarms fire again next day)
+function pruneTriggered(){
+  const today = dayKey();
+  alarmsTriggered = new Set([...alarmsTriggered].filter(k=>k.startsWith(today)));
+}
+setInterval(pruneTriggered, 60_000);
+
+// Catch up when tab becomes visible after being throttled
+document.addEventListener("visibilitychange", ()=>{
+  if (!document.hidden) alarmsTick();
+});
+
+setInterval(()=>{
+  alarmsTick();
+  if (active==="schedule"){
+    const c = document.getElementById("big-clock");
+    if (c){
+      const n = new Date();
+      c.textContent = n.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false});
+    }
+    updateSoundBadge();
+  }
+}, 1000);
+
+VIEW_FNS.schedule = (el) => {
+  const now = new Date();
+  el.innerHTML = `
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      ${pageTitle("Schedule","#B388FF")}
+      <div class="flex items-center gap-2 flex-wrap">
+        <span id="sound-status" class="sticker text-xs" style="background:${audioUnlocked?'#00C896':'#FF6B6B'}">${audioUnlocked?'🔊 Sound ready':'⚠ Tap anywhere to enable sound'}</span>
+        <button id="test-alarm" class="nb-btn px-3 py-1.5 text-xs" style="background:#FFD600">▶ Test alarm</button>
+        <button id="ask-notif" class="nb-btn bg-white px-3 py-1.5 text-xs">Enable browser notifications</button>
+      </div>
+    </div>
+    <div class="nb-card p-8 text-center mt-2" style="background:linear-gradient(135deg,#FFD600,#FFB38A)">
+      <div class="text-xs tracking-widest uppercase mb-2 font-bold">current time</div>
+      <div id="big-clock" class="mono" style="font-size:72px; font-weight:700;">${now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false})}</div>
+      <div class="text-sm mt-2 font-bold" style="opacity:.8">${now.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</div>
+    </div>
+
+    <div class="nb-card p-6 mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-3">🎵 Default Alarm Sound</h3>
+      <p class="text-sm mb-3" style="color:var(--ink-soft)">Plays whenever an alarm doesn't have its own custom start/end music. (To set per-alarm sounds, tap <b>✏ Edit</b> on any alarm below.)</p>
+      <p class="text-sm mb-3" style="color:var(--ink-soft)">For alarms to ring, this tab/PWA must stay open AND you must have interacted with the page at least once (browser autoplay rules). Tap <b>▶ Test alarm</b> above to verify.</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="cursor-pointer nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#B388FF">
+          ⬆ Upload default music
+          <input id="music-input" type="file" accept="audio/*" class="hidden" style="display:none" />
+        </label>
+        ${state.music ? `
+          <span class="text-sm" style="color:var(--ink-soft)">Loaded: <span class="font-bold">${escapeHtml(state.music.name)}</span></span>
+          <button id="preview-music" class="nb-btn bg-white px-3 py-1.5 text-xs">Preview</button>
+          <button id="clear-music" class="nb-btn px-3 py-1.5 text-xs" style="background:#FF6B6B">✕ Clear</button>
+        ` : `<span class="text-sm" style="color:var(--ink-soft)">No default uploaded — beep pattern will be used.</span>`}
+      </div>
+    </div>
+
+    <form id="alarm-form" class="nb-card p-6 mt-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+        <input id="a-label" placeholder="Label (e.g. Math block)" class="md:col-span-3 nb-input" />
+        <select id="a-subj" class="md:col-span-3 nb-input">
+          <option value="">No subject linked (optional)</option>
+          ${state.subjects.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
+        </select>
+        <input id="a-start" type="time" value="09:00" class="md:col-span-2 nb-input" />
+        <input id="a-end"   type="time" value="10:00" class="md:col-span-2 nb-input" />
+        <button type="submit" class="md:col-span-2 nb-btn px-4 py-2.5 inline-flex items-center justify-center gap-2" style="background:#B388FF">+ Add</button>
+      </div>
+      <p class="text-xs mt-3" style="color:var(--ink-soft)">💡 Linking a subject lets the start-time alarm offer a one-tap <b>"Start studying"</b> button — it logs a session and auto-starts the Pomodoro for you.</p>
+    </form>
+
+    <div id="alarm-list" class="space-y-3 mt-6"></div>
+  `;
+  document.getElementById("test-alarm").onclick = ()=>{
+    unlockAudio();
+    showAlarmToast("Test alarm — this is how it will sound");
+  };
+  document.getElementById("ask-notif").onclick = ()=>{
+    if ("Notification" in window) {
+      Notification.requestPermission().then(p=>{
+        if (p === "granted") {
+          try { new Notification("Studi", { body:"Notifications enabled ✅" }); } catch(e){}
+        }
+      });
+    }
+  };
+  document.getElementById("music-input").onchange = (e)=>{
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{ state.music = { name:f.name, dataUrl:r.result }; save(); render(); };
+    r.readAsDataURL(f);
+  };
+  if (state.music){
+    document.getElementById("preview-music").onclick = ()=>{ unlockAudio(); playAlarm(state.music.dataUrl); };
+    document.getElementById("clear-music").onclick = ()=>{ state.music=null; save(); render(); };
+  }
+  document.getElementById("alarm-form").onsubmit = (e)=>{
+    e.preventDefault();
+    state.alarms.push({ id:uid(),
+      label: document.getElementById("a-label").value || "Study block",
+      subjectId: document.getElementById("a-subj").value || "",
+      startTime: document.getElementById("a-start").value,
+      endTime: document.getElementById("a-end").value,
+      startMusicName: "", startMusicData: "",
+      endMusicName: "", endMusicData: "" });
+    save(); render();
+  };
+  const al = document.getElementById("alarm-list");
+  if (state.alarms.length===0){
+    al.innerHTML = `<div class="text-center py-8" style="color:var(--ink-soft)">No alarms yet. Schedule your study blocks above.</div>`;
+  } else {
+    al.innerHTML = state.alarms.map(a=>{
+      const linked = a.subjectId ? state.subjects.find(s=>s.id===a.subjectId) : null;
+      const editing = editingAlarmId === a.id;
+      if (editing) {
+        return `
+          <div class="nb-card p-5" style="background:#FFF7E3" data-alarm="${a.id}">
+            <div class="flex items-center gap-3 mb-3">
+              <span style="font-size:24px">✏️</span>
+              <span class="h-display font-bold text-base">Editing alarm</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+              <input class="md:col-span-6 nb-input" data-f="label" placeholder="Label" value="${escapeHtml(a.label||'')}" />
+              <select class="md:col-span-6 nb-input" data-f="subj">
+                <option value="">No subject linked</option>
+                ${state.subjects.map(s=>`<option value="${s.id}" ${s.id===a.subjectId?'selected':''}>${escapeHtml(s.name)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <div class="nb-card-soft p-3">
+                <div class="text-xs font-bold uppercase tracking-widest mb-2" style="color:var(--ink-soft)">▶ Start</div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <input class="nb-input flex-shrink-0" style="width:130px" type="time" data-f="startTime" value="${a.startTime}" />
+                  <span class="text-xs" style="color:var(--ink-soft)">sound:</span>
+                  ${a.startMusicData ? `<span class="sticker text-xs" style="background:#FFD600">🎵 ${escapeHtml(a.startMusicName||'custom')}</span>` : `<span class="text-xs" style="color:var(--ink-soft)">default beep</span>`}
+                  <label class="cursor-pointer nb-btn px-3 py-1 text-xs" style="background:#B388FF">
+                    ⬆ ${a.startMusicData?'Replace':'Upload'}
+                    <input type="file" accept="audio/*" class="hidden" style="display:none" data-music="start" />
+                  </label>
+                  ${a.startMusicData ? `<button class="nb-btn px-3 py-1 text-xs" style="background:#FF6B6B" data-clear="start">✕ Clear</button>` : ''}
+                  ${a.startMusicData ? `<button class="nb-btn px-3 py-1 text-xs" style="background:#fff" data-preview="start">▶ Preview</button>` : ''}
+                </div>
+              </div>
+              <div class="nb-card-soft p-3">
+                <div class="text-xs font-bold uppercase tracking-widest mb-2" style="color:var(--ink-soft)">⏹ End</div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <input class="nb-input flex-shrink-0" style="width:130px" type="time" data-f="endTime" value="${a.endTime}" />
+                  <span class="text-xs" style="color:var(--ink-soft)">sound:</span>
+                  ${a.endMusicData ? `<span class="sticker text-xs" style="background:#FF6B6B">🎵 ${escapeHtml(a.endMusicName||'custom')}</span>` : `<span class="text-xs" style="color:var(--ink-soft)">default beep</span>`}
+                  <label class="cursor-pointer nb-btn px-3 py-1 text-xs" style="background:#B388FF">
+                    ⬆ ${a.endMusicData?'Replace':'Upload'}
+                    <input type="file" accept="audio/*" class="hidden" style="display:none" data-music="end" />
+                  </label>
+                  ${a.endMusicData ? `<button class="nb-btn px-3 py-1 text-xs" style="background:#FF6B6B" data-clear="end">✕ Clear</button>` : ''}
+                  ${a.endMusicData ? `<button class="nb-btn px-3 py-1 text-xs" style="background:#fff" data-preview="end">▶ Preview</button>` : ''}
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center gap-2 flex-wrap">
+              <button class="nb-btn px-4 py-2 text-sm" style="background:#00C896" data-save>✓ Save changes</button>
+              <button class="nb-btn px-4 py-2 text-sm" style="background:#fff" data-cancel>Cancel</button>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="nb-card p-4 flex items-center justify-between gap-4" data-alarm="${a.id}">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <span style="font-size:28px">⏰</span>
+            <div class="min-w-0">
+              <div class="h-display font-bold text-lg truncate">${escapeHtml(a.label)}</div>
+              <div class="text-xs mt-1 flex items-center gap-2 flex-wrap">
+                <span class="chip-black" style="background:#FFD600">${a.startTime}</span>
+                <span style="color:var(--ink-soft)">→</span>
+                <span class="chip-black" style="background:#FF6B6B">${a.endTime}</span>
+                ${linked ? `<span class="sticker text-xs" style="background:${linked.color||'#5BC0EB'}">📚 ${escapeHtml(linked.name)}</span>` : ''}
+                ${a.startMusicData ? `<span class="sticker text-xs" style="background:#FFD600">🎵 start</span>` : ''}
+                ${a.endMusicData ? `<span class="sticker text-xs" style="background:#FF6B6B">🎵 end</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap justify-end">
+            <button class="nb-btn px-3 py-1.5 text-xs" style="background:#FFD600" data-test="${a.id}">▶ Test</button>
+            <button class="nb-btn px-3 py-1.5 text-xs" style="background:#fff" data-edit="${a.id}">✏ Edit</button>
+            <button class="nb-btn p-2" style="background:#FF6B6B" data-id="${a.id}">🗑</button>
+          </div>
+        </div>`;
+    }).join("");
+
+    // Wire static (non-edit) row buttons
+    al.querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>{
+      if (!confirm("Delete this alarm?")) return;
+      state.alarms = state.alarms.filter(x=>x.id!==b.dataset.id); save(); render();
+    });
+    al.querySelectorAll("button[data-edit]").forEach(b=>b.onclick=()=>{ editingAlarmId = b.dataset.edit; render(); });
+    al.querySelectorAll("button[data-test]").forEach(b=>b.onclick=()=>{
+      unlockAudio();
+      const a = state.alarms.find(x=>x.id===b.dataset.test);
+      if (!a) return;
+      // Test plays the START sound first; user can toggle off.
+      playAlarm(a.startMusicData || null);
+      showAlarmToast(`▶ ${a.label || "Study block"} (test)`, { alarm:a, kind:"start", checkin: state.subjects.length>0 });
+    });
+
+    // Wire edit-mode row controls (only one row may be in edit mode at a time)
+    al.querySelectorAll("[data-alarm]").forEach(row=>{
+      const id = row.dataset.alarm;
+      if (editingAlarmId !== id) return;
+      const a = state.alarms.find(x=>x.id===id);
+      if (!a) return;
+      const get = (sel)=> row.querySelector(sel);
+      const cancel = ()=>{ editingAlarmId = null; render(); };
+      get("[data-cancel]").onclick = cancel;
+      get("[data-save]").onclick = ()=>{
+        a.label = get('[data-f="label"]').value || "Study block";
+        a.subjectId = get('[data-f="subj"]').value || "";
+        a.startTime = get('[data-f="startTime"]').value;
+        a.endTime = get('[data-f="endTime"]').value;
+        editingAlarmId = null;
+        save(); render();
+      };
+      // Music uploads (start & end)
+      row.querySelectorAll('[data-music]').forEach(inp=>inp.onchange = (e)=>{
+        const f = e.target.files?.[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = ()=>{
+          if (inp.dataset.music === "start"){ a.startMusicData = r.result; a.startMusicName = f.name; }
+          else { a.endMusicData = r.result; a.endMusicName = f.name; }
+          save(); render();
+        };
+        r.readAsDataURL(f);
+      });
+      row.querySelectorAll('[data-clear]').forEach(b=>b.onclick=()=>{
+        if (b.dataset.clear === "start"){ a.startMusicData = ""; a.startMusicName = ""; }
+        else { a.endMusicData = ""; a.endMusicName = ""; }
+        save(); render();
+      });
+      row.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{
+        unlockAudio();
+        const url = b.dataset.preview === "start" ? a.startMusicData : a.endMusicData;
+        if (url) playAlarm(url);
+      });
+    });
+  }
+};
+
+/* =================== JOURNAL =================== */
+VIEW_FNS.journal = (el) => {
+  const date = (state._journalDate ||= todayStr());
+  const entry = state.journal.find(j=>j.date===date) || { mood:"okay", content:"" };
+  el.innerHTML = `
+    ${pageTitle("Journal","#FFB38A")}
+    <div class="nb-card p-6 mt-2">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <label class="text-xs uppercase tracking-widest font-bold" style="color:var(--ink-soft)">date</label>
+          <input id="j-date" type="date" value="${date}" class="nb-input text-sm" style="width:auto" />
+        </div>
+        <div id="moods" class="flex items-center gap-2 flex-wrap"></div>
+      </div>
+      <textarea id="j-content" class="nb-input" placeholder="What did you learn today? What's tricky? What clicked?">${escapeHtml(entry.content)}</textarea>
+      <div class="mt-4 flex items-center gap-3">
+        <button id="j-save" class="nb-btn px-5 py-2.5" style="background:#FFD600">Save entry</button>
+        <span id="j-msg" class="text-xs font-bold" style="color:#00C896"></span>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-3">Past entries</h3>
+      <div id="j-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+  `;
+  let mood = entry.mood;
+  const moodsEl = document.getElementById("moods");
+  const renderMoods = ()=> {
+    moodsEl.innerHTML = MOODS.map(m=>`
+      <button data-m="${m.id}" class="nb-btn px-3 py-1.5 text-sm flex items-center gap-1.5"
+        style="background:${mood===m.id?m.color:'#fff'}; opacity:${mood===m.id?1:.7}">
+        <span>${m.emoji}</span><span class="font-bold">${m.label}</span>
+      </button>`).join("");
+    moodsEl.querySelectorAll("button").forEach(b=>b.onclick=()=>{ mood=b.dataset.m; renderMoods(); });
+  };
+  renderMoods();
+
+  document.getElementById("j-date").onchange = (e)=>{ state._journalDate = e.target.value; render(); };
+  document.getElementById("j-save").onclick = ()=>{
+    const content = document.getElementById("j-content").value;
+    const d = document.getElementById("j-date").value;
+    const exist = state.journal.find(x=>x.date===d);
+    if (exist){ exist.mood=mood; exist.content=content; exist.updated_at=new Date().toISOString(); }
+    else state.journal.push({ id:uid(), date:d, mood, content, created_at:new Date().toISOString(), updated_at:new Date().toISOString() });
+    save();
+    document.getElementById("j-msg").textContent = "saved at "+new Date().toLocaleTimeString();
+    setTimeout(()=>document.getElementById("j-msg") && (document.getElementById("j-msg").textContent=""), 1500);
+    renderJournalList();
+  };
+
+  function renderJournalList(){
+    const list = document.getElementById("j-list");
+    const items = [...state.journal].sort((a,b)=>b.date.localeCompare(a.date));
+    if (items.length===0){ list.innerHTML = `<div class="md:col-span-2 text-center py-8" style="color:var(--ink-soft)">No journal entries yet. Start with today.</div>`; return; }
+    list.innerHTML = items.map(e=>{
+      const m = MOODS.find(x=>x.id===e.mood) || MOODS[2];
+      return `<div class="nb-card p-4 cursor-pointer" data-d="${e.date}" data-id="${e.id}" style="background:${m.color}33">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span style="font-size:24px">${m.emoji}</span>
+            <span class="mono font-bold">${e.date}</span>
+          </div>
+          <button class="nb-btn p-1.5" style="background:#FF6B6B" data-del="${e.id}">🗑</button>
+        </div>
+        <p class="text-sm" style="white-space:pre-wrap; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(e.content)||'<em style="color:var(--ink-soft)">empty</em>'}</p>
+      </div>`;
+    }).join("");
+    list.querySelectorAll("[data-del]").forEach(b=>b.onclick=(ev)=>{
+      ev.stopPropagation();
+      if (!confirm("Delete this journal entry?")) return;
+      state.journal = state.journal.filter(x=>x.id!==b.dataset.del); save(); renderJournalList();
+    });
+    list.querySelectorAll("[data-d]").forEach(d=>d.onclick=()=>{ state._journalDate=d.dataset.d; render(); });
+  }
+  renderJournalList();
+};
+
+/* =================== MOCKS =================== */
+VIEW_FNS.mocks = (el) => {
+  const stats = mockStats();
+  el.innerHTML = `
+    ${pageTitle("Mock Tests","#00C896")}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+      ${[
+        ["Tests", stats.count, "#FFD600"],
+        ["Average %", stats.avg+"%", "#00C896"],
+        ["Best %", stats.best+"%", "#5BC0EB"],
+        ["Lowest %", stats.worst+"%", "#FF6B6B"],
+      ].map(([l,v,c])=>`
+        <div class="nb-card p-4" style="background:${c}">
+          <div class="text-[10px] uppercase tracking-widest font-bold" style="opacity:.8">${l}</div>
+          <div class="h-display text-3xl font-extrabold mt-1">${v}</div>
+        </div>`).join("")}
+    </div>
+
+    <form id="m-form" class="nb-card p-6 mt-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+        <input id="m-name" placeholder="Test name (e.g. Mock #4)" class="md:col-span-4 nb-input" />
+        <select id="m-subj" class="md:col-span-3 nb-input">
+          <option value="">No subject</option>
+          ${state.subjects.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
+        </select>
+        <input id="m-date" type="date" value="${todayStr()}" class="md:col-span-2 nb-input" />
+        <input id="m-score" type="number" placeholder="Score" class="md:col-span-1 nb-input" />
+        <input id="m-max" type="number" value="100" placeholder="Out of" class="md:col-span-1 nb-input" />
+        <input id="m-notes" placeholder="Notes (optional)" class="md:col-span-9 nb-input" />
+        <button type="submit" class="md:col-span-3 nb-btn px-4 py-2.5 inline-flex items-center justify-center gap-2" style="background:#00C896">+ Log test</button>
+      </div>
+    </form>
+
+    ${stats.trend.length>0 ? `
+    <div class="nb-card p-6 mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-4">Performance trend</h3>
+      <div style="width:100%; height:280px; position:relative;"><canvas id="mock-chart"></canvas></div>
+    </div>`:''}
+
+    <div id="m-list" class="space-y-3 mt-6"></div>
+  `;
+  document.getElementById("m-form").onsubmit = (e)=>{
+    e.preventDefault();
+    const name = document.getElementById("m-name").value.trim();
+    const subjectId = document.getElementById("m-subj").value;
+    const date = document.getElementById("m-date").value;
+    const score = +document.getElementById("m-score").value;
+    const maxScore = +document.getElementById("m-max").value;
+    const notes = document.getElementById("m-notes").value;
+    if (!name || !maxScore || maxScore<=0) return alert("Please fill name and a positive Out-of value.");
+    const subj = state.subjects.find(s=>s.id===subjectId);
+    state.mocks.push({ id:uid(), name, subject_id:subjectId||null, subject_name:subj?subj.name:null,
+      date, score, max_score:maxScore, percentage:+(score/maxScore*100).toFixed(2), notes,
+      created_at:new Date().toISOString() });
+    save(); render();
+  };
+  const list = document.getElementById("m-list");
+  const items = [...state.mocks].sort((a,b)=>b.date.localeCompare(a.date));
+  if (items.length===0) list.innerHTML = `<div class="text-center py-8" style="color:var(--ink-soft)">No mock tests yet. Log your first one above!</div>`;
+  else list.innerHTML = items.map(m=>{
+    const c = m.percentage>=80?"#00C896":m.percentage>=60?"#FFD600":m.percentage>=40?"#FFB38A":"#FF6B6B";
+    return `<div class="nb-card p-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <div style="background:${c}; min-width:70px; padding:8px 12px; border:2px solid var(--ink); border-radius:16px; box-shadow:2px 2px 0 var(--ink); text-align:center;">
+          <div class="mono h-display text-xl font-extrabold">${m.percentage}%</div>
+        </div>
+        <div class="min-w-0">
+          <div class="h-display font-bold text-lg">${escapeHtml(m.name)}</div>
+          <div class="text-xs mt-0.5 flex flex-wrap gap-2 items-center" style="color:var(--ink-soft)">
+            <span class="mono">${m.date}</span>
+            ${m.subject_name?`<span class="sticker" style="background:#5BC0EB; font-size:10px;">${escapeHtml(m.subject_name)}</span>`:''}
+            <span class="font-bold" style="color:var(--ink)">${m.score}/${m.max_score}</span>
+            ${m.notes?`<span class="truncate" style="max-width:300px">— ${escapeHtml(m.notes)}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <button class="nb-btn p-2" style="background:#FF6B6B" data-id="${m.id}">🗑</button>
+    </div>`;
+  }).join("");
+  list.querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>{
+    if (!confirm("Delete this mock test result?")) return;
+    state.mocks = state.mocks.filter(x=>x.id!==b.dataset.id); save(); render();
+  });
+};
+
+/* =================== STATS =================== */
+VIEW_FNS.stats = (el) => {
+  const w = weeklyStats(), st = streakStats(), ts = todayStats();
+  const totalWeek = w.reduce((a,b)=>a+b.minutes,0);
+  const avg = Math.round(totalWeek/7);
+  el.innerHTML = `
+    ${pageTitle("Stats","#FFD600")}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+      ${[
+        ["This week", fmtMins(totalWeek), "#FFD600"],
+        ["Daily avg", fmtMins(avg), "#00C896"],
+        ["Current streak", st.current+" days", "#FF6B6B"],
+      ].map(([l,v,c])=>`
+        <div class="nb-card p-5">
+          <div class="text-xs uppercase tracking-widest font-bold" style="color:var(--ink-soft)">${l}</div>
+          <div class="mt-2 chip-black" style="background:${c}; font-size:18px;">${v}</div>
+        </div>`).join("")}
+    </div>
+
+    <div class="nb-card p-6 mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-4">Weekly Activity (minutes)</h3>
+      <div style="width:100%; height:320px; position:relative;"><canvas id="weekly-chart"></canvas></div>
+    </div>
+
+    <div class="nb-card p-6 mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-2">Today snapshot</h3>
+      <div class="flex flex-wrap gap-3 items-center">
+        ${chipBlack(ts.total_minutes,"#FFD600")}
+        <span class="text-sm" style="color:var(--ink-soft)">across ${ts.sessions_count} sessions</span>
+        <span class="sticker text-xs" style="background:#FFEFC2">goal ${ts.goal_minutes} min</span>
+      </div>
+    </div>
+  `;
+};
+
+/* =================== RECORDS =================== */
+VIEW_FNS.records = (el) => {
+  const f = state._recFrom||"", t = state._recTo||"";
+  const items = state.sessions.filter(s=>(!f||s.date>=f) && (!t||s.date<=t)).sort((a,b)=>b.started_at.localeCompare(a.started_at));
+  const total = items.reduce((a,b)=>a+b.duration_minutes,0);
+  el.innerHTML = `
+    ${pageTitle("Records","#5BC0EB")}
+    <div class="nb-card p-4 mt-2 flex flex-wrap items-center gap-3">
+      <label class="text-sm font-bold uppercase tracking-widest" style="color:var(--ink-soft)">From</label>
+      <input id="r-from" type="date" value="${f}" class="nb-input text-sm" style="width:auto"/>
+      <label class="text-sm font-bold uppercase tracking-widest" style="color:var(--ink-soft)">To</label>
+      <input id="r-to" type="date" value="${t}" class="nb-input text-sm" style="width:auto"/>
+      <button id="r-clear" class="nb-btn bg-white px-3 py-1.5 text-xs">Clear</button>
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-xs font-bold" style="color:var(--ink-soft)">${items.length} sessions</span>
+        ${chipBlack(total,"#00C896")}
+      </div>
+    </div>
+    <div class="nb-card mt-6 overflow-hidden">
+      <div class="grid grid-cols-12 gap-3 px-4 py-3 text-xs uppercase tracking-widest font-bold" style="border-bottom:2px solid var(--ink); color:var(--ink-soft)">
+        <div class="col-span-2">Date</div><div class="col-span-3">Subject</div><div class="col-span-2">Duration</div><div class="col-span-4">Notes</div><div class="col-span-1 text-right">·</div>
+      </div>
+      <div style="max-height:55vh; overflow-y:auto;" id="r-rows"></div>
+    </div>
+  `;
+  document.getElementById("r-from").onchange = (e)=>{ state._recFrom=e.target.value; render(); };
+  document.getElementById("r-to").onchange   = (e)=>{ state._recTo=e.target.value; render(); };
+  document.getElementById("r-clear").onclick = ()=>{ state._recFrom=""; state._recTo=""; render(); };
+  const rows = document.getElementById("r-rows");
+  if (items.length===0) rows.innerHTML = `<div class="p-6 text-center" style="color:var(--ink-soft)">No sessions in this range.</div>`;
+  else rows.innerHTML = items.map(s=>`
+    <div class="grid grid-cols-12 gap-3 px-4 py-3 items-center" style="border-bottom:1px dashed rgba(26,26,46,.27)">
+      <div class="col-span-2 text-sm mono">${s.date}</div>
+      <div class="col-span-3 text-sm font-bold truncate">${escapeHtml(s.subject_name)}</div>
+      <div class="col-span-2">${chipBlack(s.duration_minutes,"#FFD600")}</div>
+      <div class="col-span-4 text-sm truncate" style="color:var(--ink-soft)">${escapeHtml(s.notes)||"—"}</div>
+      <div class="col-span-1 text-right"><button class="nb-btn p-1.5" style="background:#FF6B6B" data-id="${s.id}">🗑</button></div>
+    </div>`).join("");
+  rows.querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>{
+    if (!confirm("Delete this session?")) return;
+    state.sessions = state.sessions.filter(x=>x.id!==b.dataset.id); save(); render();
+  });
+};
+
+/* =================== SETTINGS =================== */
+VIEW_FNS.settings = (el) => {
+  const s = state.settings;
+  el.innerHTML = `
+    ${pageTitle("Settings","#B388FF")}
+    <div class="nb-card p-6 mt-2">
+      <h3 class="h-display text-xl font-extrabold mb-4">Goals & Pomodoro</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        ${[
+          ["Daily goal (minutes)","goal", s.daily_goal_minutes],
+          ["Pomodoro work (minutes)","work", s.pomodoro_work],
+          ["Pomodoro break (minutes)","brk", s.pomodoro_break],
+        ].map(([l,k,v])=>`
+          <label class="block">
+            <span class="text-xs uppercase tracking-widest font-bold" style="color:var(--ink-soft)">${l}</span>
+            <div class="mt-1.5"><input id="set-${k}" type="number" min="1" value="${v}" class="nb-input"/></div>
+          </label>`).join("")}
+      </div>
+      <div class="mt-4 flex items-center gap-3">
+        <button id="set-save" class="nb-btn px-5 py-2.5" style="background:#FFD600">Save</button>
+        <span id="set-msg" class="text-sm font-bold" style="color:#00C896"></span>
+      </div>
+    </div>
+
+    <div class="nb-card p-6 mt-6">
+      <h3 class="h-display text-xl font-extrabold mb-4">Data export & import</h3>
+      <p class="text-sm mb-4" style="color:var(--ink-soft)">All your data lives in your browser (localStorage). Export everything as editable JSON or sessions as CSV. Importing JSON replaces all existing data.</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="exp-json" class="nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#5BC0EB">⬇ Export JSON</button>
+        <button id="exp-csv" class="nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#00C896">⬇ Export CSV</button>
+        <label class="cursor-pointer nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#FFD600">
+          ⬆ Import JSON
+          <input id="imp-json" type="file" accept="application/json" class="hidden" style="display:none"/>
+        </label>
+        <button id="reset-all" class="nb-btn px-4 py-2 inline-flex items-center gap-2" style="background:#FF6B6B">Reset everything</button>
+      </div>
+    </div>
+
+    <div class="nb-card p-6 mt-6" style="background:#FFF7E3">
+      <h3 class="h-display text-lg font-extrabold mb-2">About Studi</h3>
+      <p class="text-sm" style="color:var(--ink-soft)">100% client-side · installable PWA · zero accounts · zero servers · free forever. Self-host this single HTML file anywhere (GitHub Pages, Netlify, Vercel, your own folder).</p>
+      <p class="text-sm mt-2" style="color:var(--ink-soft)"><b>Install on your phone</b>: Android/Desktop will show an "⬇ Install Studi" button. On iPhone, tap Safari's <b>Share → Add to Home Screen</b>.</p>
+    </div>
+  `;
+  document.getElementById("set-save").onclick = ()=>{
+    state.settings.daily_goal_minutes = +document.getElementById("set-goal").value;
+    state.settings.pomodoro_work = +document.getElementById("set-work").value;
+    state.settings.pomodoro_break = +document.getElementById("set-brk").value;
+    save();
+    document.getElementById("set-msg").textContent = "Saved!";
+    setTimeout(()=>document.getElementById("set-msg") && (document.getElementById("set-msg").textContent=""), 1500);
+  };
+  document.getElementById("exp-json").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+    download(`studi-export-${todayStr()}.json`, blob);
+  };
+  document.getElementById("exp-csv").onclick = ()=>{
+    const rows = [["date","subject_name","duration_minutes","notes","started_at","id","subject_id"]];
+    state.sessions.forEach(s=>rows.push([s.date, `"${(s.subject_name||"").replace(/"/g,'""')}"`, s.duration_minutes, `"${(s.notes||"").replace(/"/g,'""')}"`, s.started_at, s.id, s.subject_id]));
+    const blob = new Blob([rows.map(r=>r.join(",")).join("\n")], { type:"text/csv" });
+    download(`studi-sessions-${todayStr()}.csv`, blob);
+  };
+  document.getElementById("imp-json").onchange = async (e)=>{
+    const f = e.target.files?.[0]; if (!f) return;
+    if (!confirm("Import will REPLACE all existing data. Continue?")){ e.target.value=""; return; }
+    try {
+      const json = JSON.parse(await f.text());
+      state = { ...structuredClone(defaults), ...json, settings: {...defaults.settings, ...(json.settings||{})} };
+      save(); render();
+    } catch(err){ alert("Import failed: "+err.message); }
+    e.target.value="";
+  };
+  document.getElementById("reset-all").onclick = ()=>{
+    if (!confirm("This will delete EVERYTHING. Are you sure?")) return;
+    if (!confirm("Really? This cannot be undone.")) return;
+    localStorage.removeItem(KEY); state = load(); render();
+  };
+};
+function download(filename, blob){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+/* =================== Charts =================== */
+let charts = {};
+function destroyCharts(){ Object.values(charts).forEach(c=>{ try{c.destroy();}catch(e){} }); charts = {}; }
+function initCharts(){
+  destroyCharts();
+  if (active==="stats"){
+    const c = document.getElementById("weekly-chart"); if (!c) return;
+    const w = weeklyStats();
+    charts.weekly = new Chart(c, {
+      type:"bar",
+      data:{ labels:w.map(d=>d.label), datasets:[{ data:w.map(d=>d.minutes), backgroundColor:"#FFD600", borderColor:"#1a1a2e", borderWidth:2, borderRadius:10 }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:"#FFF7E3", titleColor:"#1a1a2e", bodyColor:"#1a1a2e", borderColor:"#1a1a2e", borderWidth:2, callbacks:{ label:(ctx)=>`${ctx.parsed.y} min` } } },
+        scales:{ x:{ grid:{display:false}, border:{color:"#1a1a2e"}, ticks:{color:"#1a1a2e", font:{weight:"700"}} },
+          y:{ grid:{color:"rgba(26,26,46,0.13)", borderDash:[4,4]}, border:{color:"#1a1a2e"}, ticks:{color:"#1a1a2e"} } }
+      }
+    });
+  }
+  if (active==="mocks"){
+    const c = document.getElementById("mock-chart"); if (!c) return;
+    const stats = mockStats();
+    if (!stats.trend.length) return;
+    charts.mock = new Chart(c, {
+      type:"line",
+      data:{ labels:stats.trend.map(t=>t.name), datasets:[{ data:stats.trend.map(t=>t.percentage),
+        borderColor:"#FF6B6B", backgroundColor:"rgba(255,107,107,0.15)", borderWidth:3, tension:0.3,
+        pointBackgroundColor:"#FFD600", pointBorderColor:"#1a1a2e", pointBorderWidth:2, pointRadius:6, pointHoverRadius:9, fill:true }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:"#FFF7E3", titleColor:"#1a1a2e", bodyColor:"#1a1a2e", borderColor:"#1a1a2e", borderWidth:2, callbacks:{ label:(ctx)=>`${ctx.parsed.y}%` } } },
+        scales:{ x:{ grid:{display:false}, border:{color:"#1a1a2e"}, ticks:{color:"#1a1a2e"} },
+          y:{ min:0, max:100, grid:{color:"rgba(26,26,46,0.13)"}, border:{color:"#1a1a2e"}, ticks:{color:"#1a1a2e"} } }
+      }
+    });
+  }
+}
+
+/* =================== PWA install =================== */
+(function setupPWA(){
+  // Inline web manifest via Blob URL — keeps everything in one file
+  const manifest = {
+    name: "Studi · Daily Study Tracker",
+    short_name: "Studi",
+    description: "A playful daily study tracker — subjects, pomodoro, schedule, journal, mock tests. Saves to your browser.",
+    start_url: "./",
+    scope: "./",
+    display: "standalone",
+    orientation: "portrait-primary",
+    background_color: "#FFF7E3",
+    theme_color: "#FFD600",
+    categories: ["productivity","education","lifestyle"],
+    icons: [
+      { src: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23FFD600'/><rect x='40' y='40' width='432' height='432' rx='80' fill='%23FFD600' stroke='%231a1a2e' stroke-width='20'/><text x='256' y='360' text-anchor='middle' font-family='Arial Black,sans-serif' font-size='320' font-weight='900' fill='%231a1a2e'>S</text></svg>",
+        sizes: "192x192 512x512 any", type: "image/svg+xml", purpose: "any maskable" }
+    ]
+  };
+  try {
+    const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+    const url = URL.createObjectURL(blob);
+    const lnk = document.createElement("link");
+    lnk.rel = "manifest"; lnk.href = url;
+    document.head.appendChild(lnk);
+  } catch(e) { console.warn("manifest inject failed", e); }
+
+  // Android/Desktop install prompt
+  let deferred = null;
+  const fab = document.getElementById("install-fab");
+  window.addEventListener("beforeinstallprompt", (e)=>{
+    e.preventDefault(); deferred = e;
+    if (fab) fab.style.display = "inline-flex";
+  });
+  if (fab) fab.onclick = async ()=>{
+    if (!deferred) return;
+    deferred.prompt();
+    try { await deferred.userChoice; } catch(e){}
+    deferred = null; fab.style.display = "none";
+  };
+  window.addEventListener("appinstalled", ()=>{ if (fab) fab.style.display="none"; deferred=null; });
+
+  // iOS Safari one-time hint
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const HINT_KEY = "studi.iosHintDismissed";
+  if (isIOS && !isStandalone && !localStorage.getItem(HINT_KEY)) {
+    const hint = document.getElementById("ios-hint");
+    if (hint) {
+      setTimeout(()=>{ hint.style.display = "flex"; }, 1500);
+      document.getElementById("ios-hint-close").onclick = ()=>{
+        localStorage.setItem(HINT_KEY, "1"); hint.style.display = "none";
+      };
+    }
+  }
+})();
+
+/* =================== Boot =================== */
+render();
+</script>
+</body>
+</html>
